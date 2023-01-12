@@ -1,17 +1,26 @@
-INSERT INTO movies (movie_name)
-VALUES ("The Great Gatsby"),
-       ("Huckleberry Finn"),
-       ("100 Years of Solitude"),
-       ("Things Fall Apart"),
-       ("Crime and Punishment"),
-       ("Moby Dick"),
-       ("Decameron");
+INSERT INTO department(name)
+VALUES
+("Sales"),
+("Engineering"),
+("Finance"),
+("Legal");
 
-INSERT INTO reviews (movie_id, review)
-VALUES (1,"Amazing movie!"),
-       (2,"Made me want to see it Again"),
-       (3,"So sad"),
-       (3,"Thrilling"),
-       (4,"Would recommmend toa friend"),
-       (5,"Poor Whale"),
-       (6,"BEST movie of the year");
+INSERT INTO role(title, salary, department_id)
+VALUES
+('Sales Lead',10000,1),
+('Salesperson',80000,1),
+('Lead Engineer',150000,2),
+('Software Engineer',200000,2),
+('Account Manager',110000,3),
+('Accountant',90000,4),
+('Legal Team Lead',120000,4),
+('Lawyer',140000,4);
+
+INSERT INTO employee(first_name,last_name,role_id, manager_id)
+VALUES
+("Joe","Mixon", 1 , 1),
+("Joe","Burrow", 3 , 1),
+("Tom","Brady", 4 , 1),
+("Tony","Pollard", 4 , 1),
+("Aaron","Rodgers", 2 , 1),
+("Josh","Allen", 1 , 1);
