@@ -128,7 +128,7 @@ const questions = () => {
           },
         ])
           .then((response) => {
-          db.query(`INSERT INTO role(title, salary, department_id)
+          db.promise().query(`INSERT INTO role(title, salary, department_id)
           VALUES
           ('${response.addRole}',${response.salary},${response.depRole})`),
             console.log(`${response.addRole} was added to Roles`)
@@ -177,7 +177,7 @@ const questions = () => {
         },
       ])
         .then((response) => {
-          db.query(`INSERT INTO employee(first_name,last_name,role_id, manager_id)
+          db.promise().query(`INSERT INTO employee(first_name,last_name,role_id, manager_id)
           VALUES
           ("${response.firstName}","${response.lastName}",${response.employRole},${response.manager})`,
            function (err, results) {
