@@ -1,44 +1,98 @@
-const inquirer = require("inquirer");
-const cTable = require("console.table");
-const { response } = require("express");
-const questions = () => {
-  inquirer
-    .prompt([
-      {
-        type: "list",
-        message: "What would you like to do: ",
-        name: "choice",
-        choices: [
-          "Add Employee",
-          "Update Employee",
-          "View All Roles",
-          "Add Role",
-          "View Departments",
-          "Add Department",
-          "View All Employee's",
-        ],
-      },
-    ])
-    .then((response) => {
-      if (choice == "View Departments") {
-        // Query database
-        db.query("SELECT * FROM department", function (err, results) {
-          console.log(results);
-        });
-      } else if (choice == "View All Roles") {
-        // Query database
-        db.query("SELECT * FROM role", function (err, results) {
-          console.log(results);
-        });
-      } else if (choice == "View All Employee's") {
-        // Query database
-        db.query("SELECT * FROM employee", function (err, results) {
-          console.log(results);
-        });
-      }
-    });
-};
-questions();
+const { empty } = require('rxjs');
+const { Model, DataTypes } = require('sequelize');
+const sequelize = require('../config/connection');
+
+class Department extends Model {}
+
+Department.init(
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true
+    },
+    name: {
+      type: DataTypes.STRING,
+    }
+  },
+  {
+    sequelize,
+    timestamps: false,
+    freezeTableName: true,
+    underscored: true,
+    modelName: 'department'
+  }
+);
+
+module.exports = Department;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// const inquirer = require("inquirer");
+// const cTable = require("console.table");
+// const { response } = require("express");
+// const questions = () => {
+//   inquirer
+//     .prompt([
+//       {
+//         type: "list",
+//         message: "What would you like to do: ",
+//         name: "choice",
+//         choices: [
+//           "Add Employee",
+//           "Update Employee",
+//           "View All Roles",
+//           "Add Role",
+//           "View Departments",
+//           "Add Department",
+//           "View All Employee's",
+//         ],
+//       },
+//     ])
+//     .then((response) => {
+//       if (choice == "View Departments") {
+//         // Query database
+//         db.query("SELECT * FROM department", function (err, results) {
+//           console.log(results);
+//         });
+//       } else if (choice == "View All Roles") {
+//         // Query database
+//         db.query("SELECT * FROM role", function (err, results) {
+//           console.log(results);
+//         });
+//       } else if (choice == "View All Employee's") {
+//         // Query database
+//         db.query("SELECT * FROM employee", function (err, results) {
+//           console.log(results);
+//         });
+//       }
+//     });
+// };
+// questions();
 
 // // for the view options we willl do get from mysql to view
 // // for add department

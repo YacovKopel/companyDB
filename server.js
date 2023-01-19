@@ -1,5 +1,5 @@
 const express = require('express');
-const mysql = require('mysql2');
+const mysql = require('mysql2/promise');
 const inquirer = require('inquirer');
 const { json } = require('express');
 require('console.table');
@@ -33,47 +33,40 @@ const questions = () => {
       choices:["Add Employee", "Update Employee", "View All Roles","Add Role", "View Departments", "Add Department","View All Employee's"]
       },
     ])
-      .then((response) => {
+      .then(async(response) => {
         if (response.choice=="View Departments"){
           // Query database
-          db.query('SELECT * FROM department', function (err, results) {
-            console.table(results);
-            questions();
-          });
-         }
+          (await db).execute('SELECT * FROM department')
+          .then(([role]) => {
+            console.table(role)
+            questions()});
+          }
          else if (response.choice=="View All Roles"){
           // Query database
-          db.query('SELECT * FROM role', function (err, results) {
-            console.table(results);
-            questions();
-          });
-         }
+          (await db).execute('SELECT * FROM role')
+          .then(([role]) => {
+            console.table(role)
+            questions()});
+          }
          else if (response.choice=="View All Employee's"){
           // Query database
-          db.query('SELECT * FROM employee', function (err, results) {
-            console.table(results);
-            questions();
-          });
-         }
+          (await db).execute('SELECT * FROM employee')
+          .then(([role]) => {
+            console.table(role)
+            questions()});
+          }
          else if (response.choice=="Add Department"){
           addDepartment()
-          // need to add away to get to questions to rerender
           }
           else if (response.choice=="Add Role"){
-            //  db.query('SELECT * FROM department', function (err, results) {
-            //   console.table(results)});
               addRole();
-            // need to add a way to get to questions to rerender
             }
             else if (response.choice=="Add Employee"){
               // Query database
-              db.query('SELECT * FROM employee', function (err, results) {
-                console.table(results);
-                questions();
-              });
-             }
-             else if (response.choice=="Add Employee"){
               addEmployee();
+             }
+             else if (response.choice=="Update Employee"){
+              updateEmployee()
               // need to add away to get to questions to rerender
               }
       })
@@ -97,15 +90,23 @@ const questions = () => {
         name: 'addDep',
         }
       ])
-        .then((response) => {
-        db.promise().query(`INSERT INTO department(name)VALUES("${response.addDep}")`),
+      .then(async(response) => {
+        (await db).execute(`INSERT INTO department(name)VALUES("${response.addDep}")`)
           console.log(`${response.addDep} was added to Departments`)
         questions()})
     }
 
-    const addRole = () => {
-      // let dep=db.query('select group_concat(name) FROM department')
-      // console.log(dep)
+    async function addRole(){
+      (await db).execute('SELECT * FROM department')
+      .then(([department])=>{
+        let departmentArray = department.map(({id, name})=>{
+          return ({
+            name:`${name}`,
+            value: id
+          })
+        })
+        console.log(departmentArray)
+      
     
       inquirer
       .prompt([
@@ -123,27 +124,32 @@ const questions = () => {
             type: 'list',
             message: 'Enter the number corelating to the department that role belongs to?',
             name: 'depRole',
-            choices:["hello"]
-            // choices:["Sales", "Engineering", "Finance", "Legal"]
-          },
+            choices:departmentArray
+          }
         ])
-          .then((response) => {
-          db.promise().query(`INSERT INTO role(title, salary, department_id)
+          .then(async(response) => {
+            (await db).execute(`INSERT INTO role(title, salary, department_id)
           VALUES
           ('${response.addRole}',${response.salary},${response.depRole})`),
             console.log(`${response.addRole} was added to Roles`)
           questions()
         })
+      })
       }
+  
 
-  //           const promise = db.promise();
-  // // query database using promises
-  // const [rows,fields] = await promise.query(`INSERT INTO role(title, salary, department_id)
-  // VALUES
-  // ('${response.addRole}',${response.salary},${response.depRole})`)
-  //   console.log(`${response.addRole} was added to Roles`)});
 
-  const addEmployee = () => {
+  async function addEmployee() {
+    (await db).execute('SELECT * FROM role')
+        .then(([role])=>{
+          let roleArray = role.map(({id, title})=>{
+            return ({
+              name:`${title}`,
+              value: id
+            })
+          })
+          console.log(roleArray)
+
     inquirer
     .prompt([
         {
@@ -160,70 +166,67 @@ const questions = () => {
           type: 'list',
           message: "What is the employee's Role?",
           name: 'employRole',
-          choices:['Sales Lead',
-          'Salesperson',
-          'Lead Engineer',
-          'Software Engineer',
-          'Account Manager',
-          'Accountant',
-          'Legal Team Lead',
-          'Lawyer']
+          choices:roleArray
         },
         {
           type: 'list',
           message: "Who is the employee's manager?",
           name: 'manager',
-          choices:["all managers"]
+          choices:["1","2"]
         },
       ])
-        .then((response) => {
-          db.promise().query(`INSERT INTO employee(first_name,last_name,role_id, manager_id)
+        .then(async(response) => {
+        (await db).execute(`INSERT INTO employee(first_name,last_name,role_id, manager_id)
           VALUES
-          ("${response.firstName}","${response.lastName}",${response.employRole},${response.manager})`,
-           function (err, results) {
-            console.log(results);
-          })
-        questions()})
+          ("${response.firstName}","${response.lastName}",${response.employRole},${response.manager})`),
+          console.log(`${response.firstName} ${response.lastName} was added to Employees`)
+        questions()
+      })
+      })
       };
-  const updateEmployee = () => {
+  
+  async function updateEmployee(){
+    (await db).execute('SELECT * FROM employee; SELECT * FROM role')
+        .then(([employee])=>{
+          let employeeArray = employee.map(({id, first_name, last_name})=>{
+            return ({
+              name:`${first_name} ${last_name}`,
+              value: id
+            })
+          })
+          console.log(employeeArray)
+          .then(([role])=>{
+            let roleArray = role.map(({id, title})=>{
+              return ({
+                name:`${title}`,
+                value: id
+              })
+            })
+          
+            console.log(roleArray)
+
     inquirer
     .prompt([
         {
           type: 'list',
           message: "Which employee's role would you like to update?",
           name: 'employee',
-          choices:["all employees"]
+          choices:employeeArray
         },
         {
           type: 'list',
           message: "Which role do you want to assign to the selected employee?",
           name: 'updateRole',
-          choices:['Sales Lead',
-          'Salesperson',
-          'Lead Engineer',
-          'Software Engineer',
-          'Account Manager',
-          'Accountant',
-          'Legal Team Lead',
-          'Lawyer']
+          choices:roleArray
         }
       ])
-        .then((response) => {
-        db.promise().query(`UPDATE role SET role_id = ${response.updateRole}`),
-          console.log(`${response.addDep} was added to Departments`)
+      .then(async(response) => {
+        (await db).execute(`UPDATE employee SET role_id = ${response.updateRole} where id =${response.employee}`),
+          console.log(`${response.employee} was updated`)
         questions()})
-    }
-
-arrY=[]
-  function getdepart(){
-    db.promise().query('SELECT * FROM department')
-    .then(([dep])=>{
-  let deparray= dep.map(({id,name})=> {
-    arrY.push(deparray[0])
-    console.log(arrY)
-    return({
-      name:`${name}`,
-      value:id,
+      })
     })
-  })
-    })}
+  }
+
+
+  // fix update and mangers
