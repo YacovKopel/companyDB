@@ -186,7 +186,7 @@ const questions = () => {
       };
   
   async function updateEmployee(){
-    (await db).execute('SELECT * FROM employee; SELECT * FROM role')
+    (await db).execute('SELECT * FROM employee')
         .then(([employee])=>{
           let employeeArray = employee.map(({id, first_name, last_name})=>{
             return ({
@@ -194,7 +194,19 @@ const questions = () => {
               value: id
             })
           })
-          console.log(employeeArray)
+
+    inquirer
+    .prompt([
+        {
+          type: 'list',
+          message: "Which employee's role would you like to update?",
+          name: 'employee',
+          choices:employeeArray
+        }
+      ])
+      .then(async()=>
+      (await db).execute('SELECT * FROM role'),
+          console.log(employeeArray))
           .then(([role])=>{
             let roleArray = role.map(({id, title})=>{
               return ({
@@ -204,15 +216,8 @@ const questions = () => {
             })
           
             console.log(roleArray)
-
-    inquirer
-    .prompt([
-        {
-          type: 'list',
-          message: "Which employee's role would you like to update?",
-          name: 'employee',
-          choices:employeeArray
-        },
+        inquirer
+        .prompt([
         {
           type: 'list',
           message: "Which role do you want to assign to the selected employee?",
@@ -221,11 +226,14 @@ const questions = () => {
         }
       ])
       .then(async(response) => {
+        console.log(`${response.updateRole}`)
+        console.log(`${response.employee}`)
         (await db).execute(`UPDATE employee SET role_id = ${response.updateRole} where id =${response.employee}`),
           console.log(`${response.employee} was updated`)
         questions()})
-      })
+      
     })
+  })
   }
 
 
