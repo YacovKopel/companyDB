@@ -18,9 +18,9 @@ VALUES
 
 INSERT INTO employee(first_name,last_name,role_id, manager_id)
 VALUES
-("Joe","Mixon", 1 , 1),
-("Joe","Burrow", 3 , 1),
-("Tom","Brady", 4 , 1),
-("Tony","Pollard", 4 , 1),
-("Aaron","Rodgers", 2 , 1),
+("Joe","Mixon", 1 , Null),
+("Joe","Burrow", 3 , Null),
+("Tom","Brady", 4 , Null),
+("Tony","Pollard", 4 , 3),
+("Aaron","Rodgers", 2 , null),
 ("Josh","Allen", 1 , 1);

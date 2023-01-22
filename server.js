@@ -35,7 +35,7 @@ const questions = () => {
           "Add Role",
           "View Departments",
           "Add Department",
-          "View All Employee's"
+          "View All Employee's",
         ],
       },
     ])
@@ -48,29 +48,36 @@ const questions = () => {
         });
       } else if (response.choice == "View All Roles") {
         // Query database
-        (await db).execute("SELECT * FROM role").then(([role]) => {
-          console.table(role);
-          questions();
-        });
+        (await db)
+          .execute(
+            "select role.id, role.title, department.name as department, role.salary from role left join department on role.department_id=department.id"
+          )
+          .then(([role]) => {
+            console.table(role);
+            questions();
+          });
       } else if (response.choice == "View All Employee's") {
         // Query database
-        (await db).execute("SELECT * FROM employee").then(([role]) => {
-          console.table(role);
-          questions();
-        });
+        (await db)
+          .execute(
+            "SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary, CONCAT(manager.first_name, ' ', manager.last_name) AS manager FROM employee LEFT JOIN role on employee.role_id = role.id LEFT JOIN department on role.department_id = department.id LEFT JOIN employee manager on manager.id = employee.manager_id"
+          )
+          .then(([role]) => {
+            console.table(role);
+            questions();
+          });
       } else if (response.choice == "Add Department") {
         addDepartment();
       } else if (response.choice == "Add Role") {
         addRole();
       } else if (response.choice == "Add Employee") {
         // Query database
-        addEmployee();
+        getManager();
       } else if (response.choice == "Update Employee") {
         updateEmployee();
       }
     });
 };
-questions();
 
 // // Default response for any other request (Not Found)
 app.use((req, res) => {
@@ -78,6 +85,7 @@ app.use((req, res) => {
 });
 
 app.listen(PORT, () => console.log("Now listening"));
+questions();
 
 const addDepartment = () => {
   inquirer
@@ -135,7 +143,21 @@ async function addRole() {
   });
 }
 
-async function addEmployee() {
+async function getManager() {
+  (await db).execute("SELECT * FROM employee").then(([employee]) => {
+    let managerArray = employee.map(({ id, first_name, last_name }) => {
+      return {
+        name: `${first_name} ${last_name}`,
+        value: id,
+      };
+    });
+    let noManager = { name: "None", value: "Null" };
+    managerArray.push(noManager);
+    addEmployee(managerArray);
+  });
+}
+
+async function addEmployee(managerArray) {
   (await db).execute("SELECT * FROM role").then(([role]) => {
     let roleArray = role.map(({ id, title }) => {
       return {
@@ -166,8 +188,8 @@ async function addEmployee() {
           type: "list",
           message: "Who is the employee's manager?",
           name: "manager",
-          choices: ["1", "2"],
-        }
+          choices: managerArray,
+        },
       ])
       .then(async (response) => {
         (await db)
@@ -181,59 +203,6 @@ async function addEmployee() {
       });
   });
 }
-
-// async function updateEmployee(){
-//   (await db).execute('SELECT * FROM employee')
-//       .then(([employee])=>{
-//         let employeeArray = employee.map(({id, first_name, last_name})=>{
-//           return ({
-//             name:`${first_name} ${last_name}`,
-//             value: id
-//           })
-//         })
-
-//   inquirer
-//   .prompt([
-//       {
-//         type: 'list',
-//         message: "Which employee's role would you like to update?",
-//         name: 'employee',
-//         choices:employeeArray
-//       }
-//     ])
-//     .then(async()=>
-//     (await db).execute('SELECT * FROM role'),
-//         console.log(employeeArray))
-//         .then(([role])=>{
-//           let roleArray = role.map(({id, title})=>{
-//             return ({
-//               name:`${title}`,
-//               value: id
-//             })
-//           })
-
-//           console.log(roleArray)
-//       inquirer
-//       .prompt([
-//       {
-//         type: 'list',
-//         message: "Which role do you want to assign to the selected employee?",
-//         name: 'updateRole',
-//         choices:roleArray
-//       }
-//     ])
-//     .then(async(response) => {
-//       console.log(`${response.updateRole}`),
-//       console.log(`${response.employee}`),
-//       (await db).execute(`UPDATE employee SET role_id = ${response.updateRole} where id =${response.employee}`),
-//         console.log(`${response.employee} was updated`)
-//       questions()})
-
-//   })
-// })
-// }
-
-// fix update and mangers
 
 async function updateEmployee() {
   (await db).execute("SELECT * FROM employee").then(([employee]) => {
